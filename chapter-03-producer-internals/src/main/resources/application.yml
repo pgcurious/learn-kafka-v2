@@ -1,0 +1,63 @@
+# Chapter 03 - Producer Internals
+# Demonstrates various producer configurations
+
+server:
+  port: 8080
+
+spring:
+  application:
+    name: chapter-03-producer-internals
+
+  kafka:
+    bootstrap-servers: localhost:9092
+
+    producer:
+      # Serialization
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.apache.kafka.common.serialization.StringSerializer
+
+      # Reliability settings
+      acks: all                          # Wait for all replicas
+      retries: 3                         # Retry on failure
+
+      # Batching (balanced settings)
+      batch-size: 16384                  # 16KB default
+      buffer-memory: 33554432            # 32MB
+
+      # Additional properties
+      properties:
+        # Batching timing
+        linger.ms: 5                     # Wait 5ms to batch
+
+        # Compression (recommended for production)
+        compression.type: lz4
+
+        # Idempotence for exactly-once
+        enable.idempotence: true
+
+        # Limit in-flight requests (required for ordering with idempotence)
+        max.in.flight.requests.per.connection: 5
+
+        # Request timeout
+        request.timeout.ms: 30000
+
+        # Delivery timeout (includes retries)
+        delivery.timeout.ms: 120000
+
+# Actuator for metrics
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,prometheus
+  metrics:
+    tags:
+      application: ${spring.application.name}
+
+# Logging
+logging:
+  level:
+    com.kafka.learning: DEBUG
+    org.apache.kafka.clients.producer: INFO
+  pattern:
+    console: "%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
