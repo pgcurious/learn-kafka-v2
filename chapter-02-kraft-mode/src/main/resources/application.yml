@@ -1,0 +1,46 @@
+# Chapter 02 - KRaft Mode Deep Dive
+# This configuration is for exploring KRaft controller quorum and metadata
+
+server:
+  port: 8080
+
+spring:
+  application:
+    name: chapter-02-kraft-mode
+
+  kafka:
+    # Bootstrap servers - connect to any broker in the cluster
+    # In KRaft mode, brokers handle both data and controller requests
+    bootstrap-servers: localhost:9092
+
+    # Admin client configuration
+    admin:
+      properties:
+        # Timeout for admin operations
+        request.timeout.ms: 30000
+        default.api.timeout.ms: 60000
+        # Retry configuration
+        retries: 3
+        retry.backoff.ms: 1000
+
+# Logging configuration
+logging:
+  level:
+    # Debug logging for our application
+    com.kafka.learning: DEBUG
+    # Info level for Kafka internals
+    org.apache.kafka: INFO
+    # Reduce noise from Spring
+    org.springframework: INFO
+  pattern:
+    console: "%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"
+
+# Management endpoints for monitoring
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
